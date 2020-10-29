@@ -1,6 +1,6 @@
 # Beans - Bean Sus Source Code
 
-Big Oof, right? This looks freakishly professional.
+Big Oof, right? This looks freakishly professional. I even added GPL license.
 
 Pull the code from here, ok?
 
