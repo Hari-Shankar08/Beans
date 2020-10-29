@@ -1,0 +1,14 @@
+0, 1 - Upper Engine
+3, - Reactor
+4, - Security
+5, 6 - Lower Engine
+8, 9 - Electrical
+10, 11 - Storage
+13, - Admin
+14, 15 - Cafeteria
+17, - MedBay
+19, - Weapons
+21, - O2
+23, 24 - Navigation
+25, - Shields
+27, - Communications
