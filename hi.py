@@ -5,8 +5,8 @@ import pickle
 import asyncio
 import random
 
-with open("auth.json", "r") as file:
-    token = json.load(file)["token"].strip()
+with open("auth.pkl", "rb") as file:
+    token = pickle.load(file)
 
 with open('skeld_locations.pkl', 'rb') as pkl_file:
     skeld_locations = pickle.load(pkl_file)
@@ -29,6 +29,20 @@ players = []
 players_alive = []
 player_locations = []
 death_place = [None] * len(skeld_map)
+help_coms = {
+    'sus.game': 'Starts the game.',
+    'sus.game(n)': 'Starts the game with n players.',
+    'game.join()': 'Join the current game.',
+    'game.players': 'See the players who are part of the game.',
+    'game.reset()': 'Resets the game',
+    '!m n': 'Move to the tile numbered n',
+    '!k': 'Kill a player (Impostor only)',
+    '!v': 'Use vents (Impostor only)',
+    '!v up': 'Exit vents (Impostor only)',
+    '!rep': 'Report a dead body.',
+    '!where': 'See your current location',
+    '!map': 'See a map of The Skeld (not implemented yet)'
+}
 
 
 @client.event
@@ -55,6 +69,13 @@ async def on_message(message):
 
     if message.author == client.user:
         return
+
+    if message.content == '!help':
+        embed = discord.Embed(title='Help',
+                              description='List of available commands:')
+        for key, val in help_coms.items():
+            embed.add_field(name=key, value=val)
+        await message.channel.send(embed=embed)
 
     if True:
         if message.content.strip().lower() == "sus.game()":
@@ -105,7 +126,8 @@ async def on_message(message):
                         await player.send("Here we go then!")
                     game_in_progress = True
                     await asyncio.sleep(2)
-                    players_alive = [1] * len(players)  # 1 for alive, 0 for dead
+                    # 1 for alive, 0 for dead
+                    players_alive = [1] * len(players)
                     player_locations = [14] * len(players_alive)
                     if len(players) > 2:
                         impostors = random.sample(players, 2)
@@ -156,7 +178,8 @@ async def on_message(message):
                 tile_number = int(tile_number)
 
                 # Check message author's current position
-                current_location = player_locations[players.index(message.author)]
+                current_location = player_locations[players.index(
+                    message.author)]
                 allowed_tiles = skeld_map[current_location]
                 same_place = []
                 for i in range(len(player_locations)):
@@ -166,7 +189,8 @@ async def on_message(message):
 {skeld_locations[current_location]}: Tile {current_location}')
 
                 if tile_number in allowed_tiles:
-                    player_locations[players.index(message.author)] = tile_number
+                    player_locations[players.index(
+                        message.author)] = tile_number
                     await message.channel.send(f"You are currently in {skeld_locations[tile_number]} \
 (Tile {tile_number})")
                     if death_place[tile_number] is not None:
@@ -179,7 +203,8 @@ async def on_message(message):
                     for i in range(len(player_locations)):
                         if player_locations[i] == tile_number and players_alive[i] != 0:
                             same_place.append(players[i])
-                    same_place = [player for player in same_place if player != message.author]
+                    same_place = [
+                        player for player in same_place if player != message.author]
                     if same_place:  # Runs if non-empty
                         await message.channel.send("You also see:")
 
@@ -204,7 +229,8 @@ number. (Not Implemented Yet!)')
 
                 if current_tile in skeld_vents.keys():
                     # Make "invisible"
-                    player_locations[players.index(message.author)] = current_tile + 50
+                    player_locations[players.index(
+                        message.author)] = current_tile + 50
                     # Get the allowed movements
                     allowed_tiles = skeld_vents[current_tile]
 
@@ -216,21 +242,24 @@ number. (Not Implemented Yet!)')
                 else:
                     await message.channel.send("You can't vent here!")
             else:
-                message.channel.send("Do you think you're an impostor?\nYou're not. Run along now.")
+                message.channel.send(
+                    "Do you think you're an impostor?\nYou're not. Run along now.")
 
         if re.match(r'!v \d+', message.content.strip().lower()):
             if message.author in players:
                 # Check if impostor
                 if message.author in impostors:
                     #  Check if in a vent-able location
-                    current_tile = player_locations[players.index(message.author)]
+                    current_tile = player_locations[players.index(
+                        message.author)]
                     if current_tile > 50:
                         current_tile -= 50
                     _, tile_to = tuple(message.content.strip().lower().split())
 
                     tile_to = int(tile_to)
                     if tile_to in skeld_vents[current_tile]:
-                        player_locations[players.index(message.author)] = tile_to + 50
+                        player_locations[players.index(
+                            message.author)] = tile_to + 50
                         await message.channel.send(f"You are currently in the vent at {skeld_locations[tile_to]}: \
 Tile Number {tile_to}.\nYou are not seen.")
 
@@ -238,7 +267,8 @@ Tile Number {tile_to}.\nYou are not seen.")
                         for i in range(len(player_locations)):
                             if player_locations[i] == tile_to and players_alive[i] != 0:
                                 same_place.append(players[i])
-                        same_place = [player for player in same_place if player != message.author]
+                        same_place = [
+                            player for player in same_place if player != message.author]
                         if same_place:  # Runs if non-empty
                             await message.channel.send("You can see:")
                             for player in same_place:
@@ -262,7 +292,8 @@ to enter vent and see where you can go to.")
             if message.author in players:
                 # Check if impostor
                 if message.author in impostors:
-                    current_tile = player_locations[players.index(message.author)]
+                    current_tile = player_locations[players.index(
+                        message.author)]
                     if current_tile > 40:
                         current_tile = current_tile - 50
                         same_place = []
@@ -271,7 +302,8 @@ to enter vent and see where you can go to.")
                         for i in range(len(player_locations)):
                             if player_locations[i] == current_tile and players_alive[i] != 0:
                                 same_place.append(players[i])
-                        same_place = [player for player in same_place if player != message.author]
+                        same_place = [
+                            player for player in same_place if player != message.author]
                         if same_place:  # Runs if non-empty
                             await message.channel.send("You can see:")
                             for player in same_place:
@@ -279,7 +311,8 @@ to enter vent and see where you can go to.")
                         else:
                             await message.channel.send("You're the only one here.")
 
-                        player_locations[players.index(message.author)] = current_tile
+                        player_locations[players.index(
+                            message.author)] = current_tile
                     else:
                         await message.channel.send('You\'re not even in a vent. Seriously. Think I wouldn\'t notice?')
 
@@ -296,13 +329,15 @@ to enter vent and see where you can go to.")
         if message.content.lower() == "!k":
             if message.author in players:
                 if message.author in impostors:
-                    current_tile = player_locations[players.index(message.author)]
+                    current_tile = player_locations[players.index(
+                        message.author)]
                     if current_tile < 40:
                         same_place = []
                         for i in range(len(player_locations)):
                             if player_locations[i] == current_tile and players_alive[i] != 0:
                                 same_place.append(players[i])
-                        same_place = [player for player in same_place if player != message.author]
+                        same_place = [
+                            player for player in same_place if player != message.author]
 
                         # same_place contains players (in same place)
                         if same_place:  # Runs if non-empty
@@ -314,7 +349,8 @@ to enter vent and see where you can go to.")
                                 if death_place[current_tile] is None:
                                     death_place[current_tile] = [same_place[0]]
                                 else:
-                                    death_place[current_tile].append(same_place[0])
+                                    death_place[current_tile].append(
+                                        same_place[0])
                         else:
                             await message.channel.send("You're the only one here.")
                     else:
