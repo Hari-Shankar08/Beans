@@ -33,6 +33,9 @@ time_remaining = 0
 time_remaining_message = ''
 voting_names = []
 voting_names_end = []
+gen_channel = None
+
+
 @client.event
 async def on_ready():
     print("Ready to go!")
@@ -58,12 +61,15 @@ async def on_message(message):
     global time_remaining
     global voting_names
     global voting_names_end
+    global gen_channel
+    time_remaining_message = gen_channel.send('')
 
     if message.author == client.user:
         return
 
     if True:
         if message.content.strip().lower() == "sus.game()":
+            gen_channel = message.channel
             if not game_in_progress:
                 if not game_requested:
                     # Sends to the channel where the last message was sent
@@ -71,14 +77,17 @@ async def on_message(message):
 {n_players} players' game")
                     game_requested = True
                     players.append(message.author)
-                    voting_names.append(message.author[:3]) # First 3 letters of name for voting_names
-                    voting_names_end.append(message.author[-3:]) # Last 3 letters of name if first 3 are same(just in case)
+                    # First 3 letters of name for voting_names
+                    voting_names.append(message.author[:3])
+                    # Last 3 letters of name if first 3 are same(just in case)
+                    voting_names_end.append(message.author[-3:])
                 else:
                     await message.channel.send("A game has already been requested.")
             else:
                 await message.channel.send("A game is currently in progress. Please wait.")
 
         if re.match(r'sus.game\(\d+\)', message.content.strip().lower()):
+            gen_channel = message.channel
             m = message.content.strip().lower()
             if not game_in_progress:
                 if not game_requested:
@@ -113,7 +122,8 @@ async def on_message(message):
                         await player.send("Here we go then!")
                     game_in_progress = True
                     await asyncio.sleep(2)
-                    players_alive = [1] * len(players)  # 1 for alive, 0 for dead
+                    # 1 for alive, 0 for dead
+                    players_alive = [1] * len(players)
                     player_locations = [14] * len(players_alive)
                     if len(players) > 2:
                         impostors = random.sample(players, 2)
@@ -164,7 +174,8 @@ async def on_message(message):
                 tile_number = int(tile_number)
 
                 # Check message author's current position
-                current_location = player_locations[players.index(message.author)]
+                current_location = player_locations[players.index(
+                    message.author)]
                 allowed_tiles = skeld_map[current_location]
                 same_place = []
                 for i in range(len(player_locations)):
@@ -174,7 +185,8 @@ async def on_message(message):
 {skeld_locations[current_location]}: Tile {current_location}')
 
                 if tile_number in allowed_tiles:
-                    player_locations[players.index(message.author)] = tile_number
+                    player_locations[players.index(
+                        message.author)] = tile_number
                     await message.channel.send(f"You are currently in {skeld_locations[tile_number]} \
 (Tile {tile_number})")
                     if death_place[tile_number] is not None:
@@ -187,7 +199,8 @@ async def on_message(message):
                     for i in range(len(player_locations)):
                         if player_locations[i] == tile_number and players_alive[i] != 0:
                             same_place.append(players[i])
-                    same_place = [player for player in same_place if player != message.author]
+                    same_place = [
+                        player for player in same_place if player != message.author]
                     if same_place:  # Runs if non-empty
                         await message.channel.send("You also see:")
 
@@ -212,7 +225,8 @@ number. (Not Implemented Yet!)')
 
                 if current_tile in skeld_vents.keys():
                     # Make "invisible"
-                    player_locations[players.index(message.author)] = current_tile + 50
+                    player_locations[players.index(
+                        message.author)] = current_tile + 50
                     # Get the allowed movements
                     allowed_tiles = skeld_vents[current_tile]
 
@@ -224,21 +238,24 @@ number. (Not Implemented Yet!)')
                 else:
                     await message.channel.send("You can't vent here!")
             else:
-                message.channel.send("Do you think you're an impostor?\nYou're not. Run along now.")
+                message.channel.send(
+                    "Do you think you're an impostor?\nYou're not. Run along now.")
 
         if re.match(r'!v \d+', message.content.strip().lower()):
             if message.author in players:
                 # Check if impostor
                 if message.author in impostors:
                     #  Check if in a vent-able location
-                    current_tile = player_locations[players.index(message.author)]
+                    current_tile = player_locations[players.index(
+                        message.author)]
                     if current_tile > 50:
                         current_tile -= 50
                     _, tile_to = tuple(message.content.strip().lower().split())
 
                     tile_to = int(tile_to)
                     if tile_to in skeld_vents[current_tile]:
-                        player_locations[players.index(message.author)] = tile_to + 50
+                        player_locations[players.index(
+                            message.author)] = tile_to + 50
                         await message.channel.send(f"You are currently in the vent at {skeld_locations[tile_to]}: \
 Tile Number {tile_to}.\nYou are not seen.")
 
@@ -246,7 +263,8 @@ Tile Number {tile_to}.\nYou are not seen.")
                         for i in range(len(player_locations)):
                             if player_locations[i] == tile_to and players_alive[i] != 0:
                                 same_place.append(players[i])
-                        same_place = [player for player in same_place if player != message.author]
+                        same_place = [
+                            player for player in same_place if player != message.author]
                         if same_place:  # Runs if non-empty
                             await message.channel.send("You can see:")
                             for player in same_place:
@@ -270,7 +288,8 @@ to enter vent and see where you can go to.")
             if message.author in players:
                 # Check if impostor
                 if message.author in impostors:
-                    current_tile = player_locations[players.index(message.author)]
+                    current_tile = player_locations[players.index(
+                        message.author)]
                     if current_tile > 40:
                         current_tile = current_tile - 50
                         same_place = []
@@ -279,7 +298,8 @@ to enter vent and see where you can go to.")
                         for i in range(len(player_locations)):
                             if player_locations[i] == current_tile and players_alive[i] != 0:
                                 same_place.append(players[i])
-                        same_place = [player for player in same_place if player != message.author]
+                        same_place = [
+                            player for player in same_place if player != message.author]
                         if same_place:  # Runs if non-empty
                             await message.channel.send("You can see:")
                             for player in same_place:
@@ -287,7 +307,8 @@ to enter vent and see where you can go to.")
                         else:
                             await message.channel.send("You're the only one here.")
 
-                        player_locations[players.index(message.author)] = current_tile
+                        player_locations[players.index(
+                            message.author)] = current_tile
                     else:
                         await message.channel.send('You\'re not even in a vent. Seriously. Think I wouldn\'t notice?')
 
@@ -304,13 +325,15 @@ to enter vent and see where you can go to.")
         if message.content.lower() == "!k":
             if message.author in players:
                 if message.author in impostors:
-                    current_tile = player_locations[players.index(message.author)]
+                    current_tile = player_locations[players.index(
+                        message.author)]
                     if current_tile < 40:
                         same_place = []
                         for i in range(len(player_locations)):
                             if player_locations[i] == current_tile and players_alive[i] != 0:
                                 same_place.append(players[i])
-                        same_place = [player for player in same_place if player != message.author]
+                        same_place = [
+                            player for player in same_place if player != message.author]
 
                         # same_place contains players (in same place)
                         if same_place:  # Runs if non-empty
@@ -363,15 +386,11 @@ to enter vent and see where you can go to.")
                     for name in voting_names:
                         if message.author.content.lower().strip() == f"!{name}":
                             voting_names[name] = '~' + voting_names[name]
-                        #if max(list(set(voting_names))) == max(voting_names):
-
+                        # if max(list(set(voting_names))) == max(voting_names):
 
                 else:
                     await message.channel.send("Type out the last 3 letters of the suspected person to vote them out!\
                     \n(preceded by a '!' of course)")
-
-
-
 
 
 @client.event
