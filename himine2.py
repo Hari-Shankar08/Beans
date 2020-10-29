@@ -34,6 +34,7 @@ time_remaining_message = ''
 voting_names = []
 voting_names_end = []
 gen_channel = None
+time_remaining_message = None
 
 
 @client.event
@@ -62,7 +63,7 @@ async def on_message(message):
     global voting_names
     global voting_names_end
     global gen_channel
-    time_remaining_message = gen_channel.send('')
+    global time_remaining_message
 
     if message.author == client.user:
         return
@@ -70,6 +71,7 @@ async def on_message(message):
     if True:
         if message.content.strip().lower() == "sus.game()":
             gen_channel = message.channel
+            time_remaining_message = gen_channel.send('')
             if not game_in_progress:
                 if not game_requested:
                     # Sends to the channel where the last message was sent
@@ -88,6 +90,7 @@ async def on_message(message):
 
         if re.match(r'sus.game\(\d+\)', message.content.strip().lower()):
             gen_channel = message.channel
+            time_remaining_message = gen_channel.send('')
             m = message.content.strip().lower()
             if not game_in_progress:
                 if not game_requested:
