@@ -1,12 +1,11 @@
 import discord
-import json
 import re
 import pickle
 import asyncio
 import random
 
-with open("auth.json", "r") as file:
-    token = json.load(file)["token"].strip()
+with open("auth.pkl", "rb") as file:
+    token = pickle.load(file)
 
 with open('skeld_locations.pkl', 'rb') as pkl_file:
     skeld_locations = pickle.load(pkl_file)
