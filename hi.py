@@ -366,6 +366,15 @@ to enter vent and see where you can go to.")
             for player in players:
                 await player.send(f"A dead body was found!\nReported by {message.author} \
 \nDiscuss!!\n You've got 30s")
+                await player.send('Players in the game:')
+                await player.send('Alive:')
+                for i in range(len(players_alive)):
+                    if players_alive[i] == 1:
+                        await player.send(f'      {players[i]}')
+                await player.send('Dead:')
+                for i in range(len(players_alive)):
+                    if players_alive[i] == 0:
+                        await player.send(f'      {players[i]}')
                 await player.send("Dead dudes please don't chat. Keep the game interesting!")
 
             await asyncio.sleep(30)
